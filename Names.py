@@ -2,52 +2,9 @@ import random
 import msvcrt
 import json
 import os
+
 VOTES_FILE = "votes.json"
 WINS_FILE = "wins.json"
-try:
-    with open(VOTES_FILE, "r") as f:
-        try:
-            overallVotes = json.load(f)
-            nameVotes = overallVotes["votes"]
-        except json.JSONDecodeError:
-            nameVotes = [0, 0, 0, 0, 0, 0,
-                     0, 0, 0, 0, 0, 0,
-                     0, 0, 0, 0, 0, 0,
-                     0, 0, 0, 0, 0, 0,
-                     0, 0, 0, 0, 0, 0]
-            overallVotes = {"votes": nameVotes}
-except FileNotFoundError:
-    nameVotes = [0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0,
-             0, 0, 0, 0, 0, 0]
-    overallVotes = {"votes": nameVotes}
-
-try:
-    with open(WINS_FILE, "r") as f:
-        record = json.load(f)
-
-    # Fallbacks if keys are missing
-    winCount = record.get("wins", [0] * 30)
-    lossCount = record.get("losses", [0] * 30)
-    tieCount = record.get("ties", [0] * 30)
-
-    # Rebuild record with all keys, so it's consistent
-    record = {
-        "wins": winCount,
-        "losses": lossCount,
-        "ties": tieCount
-    }
-except (json.JSONDecodeError, FileNotFoundError):
-    winCount = [0] * 30
-    lossCount = [0] * 30
-    tieCount = [0] * 30
-    record = {
-        "wins": winCount,
-        "losses": lossCount,
-        "ties": tieCount
-    }
 
 names = ["Moe", "Larry", "Gary", "Finn", "Copper", "Steverino",
          "Rizzo", "Ozzy", "Pickle Rick", "Caesar", "Loki", "Luigi",
@@ -57,6 +14,43 @@ names = ["Moe", "Larry", "Gary", "Finn", "Copper", "Steverino",
 names_ordered= []
 roundOne = []
 
+try:
+    with open(VOTES_FILE, "r") as f:
+        try:
+            overallVotes = json.load(f)
+            nameVotes = overallVotes["votes"]
+        except json.JSONDecodeError:
+            nameVotes = [0] * len(names)
+            overallVotes = {"votes": nameVotes}
+except FileNotFoundError:
+    nameVotes = [0] * len(names)
+    overallVotes = {"votes": nameVotes}
+
+try:
+    with open(WINS_FILE, "r") as f:
+        record = json.load(f)
+
+    # Fallbacks if keys are missing
+    winCount = record.get("wins", [0] * len(names))
+    lossCount = record.get("losses", [0] * len(names))
+    tieCount = record.get("ties", [0] * len(names))
+
+    # Rebuild record with all keys, so it's consistent
+    record = {
+        "wins": winCount,
+        "losses": lossCount,
+        "ties": tieCount
+    }
+except (json.JSONDecodeError, FileNotFoundError):
+    winCount = [0] * len(names)
+    lossCount = [0] * len(names)
+    tieCount = [0] * len(names)
+    record = {
+        "wins": winCount,
+        "losses": lossCount,
+        "ties": tieCount
+    }
+
 def nameSelector(y, z):
     x = random.randint(0, len(y)-1)
     a = y.pop(x)
@@ -65,16 +59,16 @@ def nameSelector(y, z):
     return z
 
 def randomizer(i = 0):
-    while i < 30:
+    while i < len(names):
         nameSelector(names, names_ordered)
         i += 1
 
 def selector(j = 0, k = 0):
-    while j < 30:
+    while j < len(names):
         nameSelector(names_ordered, roundOne)
         j += 1
-    while k < 15:
-        print(f"1.{k+1}: {roundOne[k]} vs {roundOne[k+15]}")
+    while k < len(names)/2:
+        print(f"1.{k+1}: {roundOne[k]} vs {roundOne[k+(len(names)/2)]}")
         k += 1
 
 def add_votes(name, names_ordered):
