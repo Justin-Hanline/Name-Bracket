@@ -377,12 +377,12 @@ class IntermissionPage(tk.Frame):
     # --- Timer Logic ---
     
     def start_timer(self):
-        """Starts or resets the 5-minute timer."""
+        """Starts or resets the timer."""
         # Stop any existing timer before starting a new one
         if self.timer_id:
             self.after_cancel(self.timer_id)
             
-        self.time_left_s = 300  # Reset to 5 minutes
+        self.time_left_s = self.time_start
         self.update_timer()
 
     def _update_image(self):
@@ -394,10 +394,10 @@ class IntermissionPage(tk.Frame):
         # 1. Blastoise: Time < 30 seconds
         if self.time_left_s < 30:
             image_file = self.image_map['Blastoise']['file']
-        # 2. Wartortle: 30 <= Time <= time_start / 2 (e.g., 30 <= Time <= 150)
+        # 2. Wartortle: 30 <= Time <= time_start / 2 (e.g., 30 <= Time <= x)
         elif self.time_left_s <= self.time_start / 2:
             image_file = self.image_map['Wartortle']['file']
-        # 3. Squirtle: Time > time_start / 2 (e.g., > 150)
+        # 3. Squirtle: Time > time_start / 2 (e.g., > x)
         else:
             image_file = self.image_map['Squirtle']['file']
 
@@ -531,3 +531,4 @@ class ResultsPage(tk.Frame):
 if __name__ == "__main__":    
     app = BracketApp()
     app.mainloop()
+
