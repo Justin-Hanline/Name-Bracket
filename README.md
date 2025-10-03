@@ -17,3 +17,8 @@ To run:
 1) Open command prompt and change the directory to the folder where these files are being held (cd "FILE_DIRECTORY")
 2) type "python BracketGUI.py"
 Everything should compile accordingly
+
+An important comment about the timer:
+1) To change the initial timer value, go to line 343 in BracketGUI.py and change the value
+2) If you choose to set your initial timer value to less than 60 seconds, the image will skip Wartortle* and go straight to Blastoise* at the 30 second mark
+*Assumes you don't change the files (the lines to change the names of these files are at lines 350, 352, and 354, so long you add the actual files to the folder.
