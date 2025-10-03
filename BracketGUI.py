@@ -1,15 +1,18 @@
-#How 2: https://www.pythonguis.com/tutorials/create-gui-tkinter/
-#Pages Source: https://stackoverflow.com/questions/7546050/switch-between-two-frames-in-tkinter
+#Python GUI How 2: https://www.pythonguis.com/tutorials/create-gui-tkinter/
+#Pages Idea: https://stackoverflow.com/questions/7546050/switch-between-two-frames-in-tkinter
+
+#Blastoise image from: https://www.pokemon.com/us/pokedex/blastoise
+#Wartortle image from: https://marriland.com/pokedex/wartortle/
+#Squirtle  image from: https://www.pokemon.com/us/pokedex/squirtle
 
 import tkinter as tk
 from tkinter import *
 from tkinter import font as tkfont
 import random
 import time
-#from PIL import Image, ImageTk
 import Names
 
-def setup_names_data(num_names=30):
+def setup_names_data(num_names=len(Names.names)):
     names = [f"Name {i+1}" for i in range(num_names)]
     random.shuffle(names)
     data = {name: {'wins': 0, 'losses': 0, 'total_votes': 0} for name in names}
@@ -138,7 +141,7 @@ class BracketApp(tk.Tk):
         votes1, votes2 = self.get_match_score(name1, name2)
 
         winner = loser = None
-        if votes1 + votes2 >= 5:
+        if votes1 + votes2 >= 1:
             if votes1 > votes2:
                 winner, loser = name1, name2
             elif votes2 > votes1:
@@ -146,7 +149,7 @@ class BracketApp(tk.Tk):
             else:
                 return
 
-        if (votes1 >= 3 or votes2 >= 3) and winner is not None:
+        if (votes1 >= 1 or votes2 >= 1) and winner is not None:
             key = tuple(sorted((name1, name2)))
             if len(self.round_scores[key]) == 2:
                 Names.add_win(winner, Names.names)
@@ -162,7 +165,7 @@ class BracketApp(tk.Tk):
         for name1, name2 in current_matches:
             key = tuple(sorted((name1, name2)))
             # Check if the match was marked as finished/recorded in the cache
-            if key in self.round_scores and (self.round_scores[key][0] + self.round_scores[key][1]) >= 5:
+            if key in self.round_scores and (self.round_scores[key][0] + self.round_scores[key][1]) >= 1:
                 finished_matches += 1
 
         if finished_matches == self.matches_per_round:
@@ -338,29 +341,34 @@ class IntermissionPage(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         self.controller = controller
-        
-        # 1. Variables for the Timer
-        self.time_left_s = 300  # 5 minutes in seconds (5 * 60)
-        self.timer_id = None    # To hold the reference for the scheduled 'after' call
 
-        # Crucial: Store a persistent reference to the PhotoImage
-        try:
-            self.image_ref = tk.PhotoImage(file="Squirtle.png")
-        except tk.TclError:
-            self.image_ref = None
-            
+        # 1. Variables for the Timer
+        self.time_start = 300  #Keep above 1 minute (60s) so there's no issues implementing the code.
+        self.time_left_s = self.time_start
+        self.timer_id = None    # To hold the reference for the scheduled 'after' call
+        
+        # Dictionary to map time thresholds to image files
+        self.image_map = {
+            # Time > time_start / 2 (e.g., > 150 seconds)
+            'Squirtle': {"threshold": self.time_start / 2, "file": "Squirtle.png"},
+            # Time >= 30 and <= time_start / 2 (e.g., 30 <= time <= 150 seconds)
+            'Wartortle': {"threshold": 30, "file": "Wartortle.png"},
+            # Time < 30 seconds
+            'Blastoise': {"threshold": 0, "file": "Blastoise.png"}, # We use 0 as the lowest boundary
+        }
+        # A persistent reference for the current PhotoImage
+        self.current_image_ref = None 
+
         # 2. Page Layout
         tk.Label(self, text="Intermission", font=controller.title_font).pack(side="top", fill="x", pady=10)
-        
+
         # Timer Label (Initialize with the starting time)
         self.timer_label = tk.Label(self, text=self._format_time(), font=controller.title_font, fg="red")
         self.timer_label.pack(pady=10)
-        
-        # Display Image
-        if self.image_ref:
-            tk.Label(self, image=self.image_ref).pack()
-        else:
-            tk.Label(self, text="Error: Squirtle.png not found").pack()
+
+        # Display Image Label
+        self.image_label = tk.Label(self)
+        self.image_label.pack()
 
         # Navigation Button
         tk.Button(self, text="Go to Start Page",
@@ -377,17 +385,46 @@ class IntermissionPage(tk.Frame):
         self.time_left_s = 300  # Reset to 5 minutes
         self.update_timer()
 
+    def _update_image(self):
+        """Loads and updates the image based on the current time remaining."""
+        # The logic is applied in descending order of time remaining to handle overlapping ranges
+        
+        image_file = None
+        
+        # 1. Blastoise: Time < 30 seconds
+        if self.time_left_s < 30:
+            image_file = self.image_map['Blastoise']['file']
+        # 2. Wartortle: 30 <= Time <= time_start / 2 (e.g., 30 <= Time <= 150)
+        elif self.time_left_s <= self.time_start / 2:
+            image_file = self.image_map['Wartortle']['file']
+        # 3. Squirtle: Time > time_start / 2 (e.g., > 150)
+        else:
+            image_file = self.image_map['Squirtle']['file']
+
+        try:
+            # Load the new image and store a reference to prevent garbage collection
+            new_image_ref = tk.PhotoImage(file=image_file)
+            self.image_label.config(image=new_image_ref)
+            self.current_image_ref = new_image_ref
+        except tk.TclError:
+            self.image_label.config(image='', text=f"Error: {image_file} not found")
+            self.current_image_ref = None
+
     def update_timer(self):
         """Decrements the timer and schedules the next update."""
         if self.time_left_s > 0:
             self.time_left_s -= 1
             self.timer_label.config(text=self._format_time())
             
+            # --- The crucial fix: Update the image dynamically ---
+            self._update_image()
+            
             # Schedule this function to run again after 1000ms (1 second)
             self.timer_id = self.after(1000, self.update_timer)
         else:
             # Timer is done!
             self.timer_label.config(text="Time's Up!", fg="blue")
+            self._update_image() # Final image update
             
     def _format_time(self):
         """Converts seconds into MM:SS format."""
