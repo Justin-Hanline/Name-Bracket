@@ -1,7 +1,7 @@
 #Python GUI How 2: https://www.pythonguis.com/tutorials/create-gui-tkinter/
 #Pages Idea: https://stackoverflow.com/questions/7546050/switch-between-two-frames-in-tkinter
 
-#Blastoise image from: https://www.pokemon.com/us/pokedex/blastoise
+#Blastoise image from: https://sg.portal-pokemon.com/play/pokedex/0009_2
 #Wartortle image from: https://marriland.com/pokedex/wartortle/
 #Squirtle  image from: https://www.pokemon.com/us/pokedex/squirtle
 
@@ -531,4 +531,5 @@ class ResultsPage(tk.Frame):
 if __name__ == "__main__":    
     app = BracketApp()
     app.mainloop()
+
 
