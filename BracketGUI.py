@@ -210,7 +210,7 @@ class StartPage(tk.Frame):
         tk.Frame.__init__(self, parent)
         self.controller = controller
         
-        tk.Label(self, text="Hanline Dog Name Bracket 2025", 
+        tk.Label(self, text="Dog Name Bracket 2025", 
                  font=controller.title_font).pack(side="top", fill="x", pady=10)
 
         # Labels for static info
@@ -531,5 +531,6 @@ class ResultsPage(tk.Frame):
 if __name__ == "__main__":    
     app = BracketApp()
     app.mainloop()
+
 
 
